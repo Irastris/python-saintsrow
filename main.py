@@ -3,6 +3,7 @@ from struct import unpack
 
 import lz4.frame as lz4f
 import click
+import progressbar
 
 def unpackLong(file): return unpack("<I", file.read(4))[0]
 def unpackLongLong(file): return unpack("<Q", file.read(8))[0]
@@ -81,7 +82,7 @@ def extract(input, skip_audio, skip_compressed):
     input.seek(curPos)
 
     # Files
-    for i in range(fileCount):
+    for i in progressbar.progressbar(range(fileCount)):
         filename = nameTable[unpackLongLong(input):].split(b"\x00")[0].decode("utf-8")
         path = nameTable[unpackLongLong(input):].split(b"\x00")[0].decode("utf-8")
         filepath = f"{path}\\{filename}"
