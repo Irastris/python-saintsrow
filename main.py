@@ -1,5 +1,4 @@
 import os, sys
-from sys import argv
 from struct import unpack
 
 import lz4.frame as lz4f
