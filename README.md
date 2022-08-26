@@ -1,8 +1,8 @@
 # Python-SaintsRow
-An experimental Python toolset designed expressly for "Saints Row (2022)"
+An experimental CLI toolset designed expressly for "Saints Row (2022)", built with Python.
 
 # Requirements
-`python-lz4` and `click` must be installed, to do this through PIP execute `pip install lz4 click` from a command line.
+`python-lz4`, `click`, and `progressbar2` must be installed, this can be done via PIP: `pip install lz4 click progressbar2`.
 
 # Usage
 Run `main.py` and refer to the built-in help documentation.
