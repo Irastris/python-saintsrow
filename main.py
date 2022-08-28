@@ -109,11 +109,13 @@ def extract(input, skip_animation, skip_archive, skip_audio, skip_mesh, skip_mor
     fileTable = list(filter(None, fileTable))
     del isFileAnimation, isFileMorph, isFileVideo, isFileArchive, isFileAudio, isFileMesh, isFilePrefab, isFileTexture
     del filename, path, nameTable
-
+    
     # Extract Files
     with ThreadPoolExecutor() as pool:
         threads = []
-        for i in range(len(fileTable)):
+        
+        widgets[0], widgets[2] = "Submitting ", " Extraction Jobs "
+        for i in progressbar.progressbar(range(len(fileTable)), widgets=widgets):
             dataOffset      = fileTable[i][0]
             size            = fileTable[i][1]
             compressedSize  = fileTable[i][2]
