@@ -11,4 +11,4 @@ Clone this repository and run `pip install .` in a terminal running in the repo'
 Clone this repository and run `py generate.py` in a terminal running in the repo's root.
 
 # Usage
-Run `sr5tools` from a terminal and refer to the built-in help documentation.
+Run `sr5tool` from a terminal and refer to the built-in help documentation.
