@@ -6,9 +6,9 @@ An experimental CLI toolset designed expressly for "Saints Row (2022)", built wi
 
 # Building:
 #### setuptools
-Clone this repository and run `pip install .` in a terminal running in the repo's root.
+Clone this repository and run `py standalone.py` or `pip install .` for system wide access.
 #### PyInstaller
-Clone this repository and run `py generate.py` in a terminal running in the repo's root.
+Clone this repository and run `py generate.py`.
 
 # Usage
 Run `sr5tool` from a terminal and refer to the built-in help documentation.
