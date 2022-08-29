@@ -1,7 +1,7 @@
 import click
 
-from commands import extract
-from commands import search
+from .commands import extract
+from .commands import search
 
 @click.group()
 def cli():

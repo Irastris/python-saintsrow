@@ -1,7 +1,7 @@
 import click
 
-from classes.SR5Archive import SR5Archive
-from functions.threadedExtractor import threadedExtractor
+from ..classes.SR5Archive import SR5Archive
+from ..functions.threadedExtractor import threadedExtractor
 
 def printEntryInfo(entry, dataOffsetBase):
     print("")

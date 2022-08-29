@@ -3,8 +3,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import click
 import progressbar
 
-from classes.SR5Archive import SR5Archive
-from functions.threadedExtractor import threadedExtractor
+from ..classes.SR5Archive import SR5Archive
+from ..functions.threadedExtractor import threadedExtractor
 
 @click.command()
 @click.option("-sAn", "--skip-animation", is_flag=True, help="Skip extracting animation data")
