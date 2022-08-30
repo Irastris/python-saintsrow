@@ -27,7 +27,9 @@ def repack(input, output):
     # Get Directories
     directories = []
     for file in files:
-        directory = file.parents[0]
+        directory = str(file.parents[0])
+        if directory.startswith("data\\engine"):
+            directory = f"..\\ctg\\{directory}"
         if directory not in directories:
             directories.append(directory)
 
@@ -41,13 +43,15 @@ def repack(input, output):
         fileEntry = files.index(file)
         fileTable.append([len(nameTable)])
         nameTable = nameTable + str.encode(file.name) + b"\x00"
-        dir = str(file.parents[0])
-        if dir in directoryDict:
-            fileTable[fileEntry].append(directoryDict[dir])
+        directory = str(file.parents[0])
+        if directory.startswith("data\\engine"):
+            directory = f"..\\ctg\\{directory}"
+        if directory in directoryDict:
+            fileTable[fileEntry].append(directoryDict[directory])
         else:
-            directoryDict[dir] = (len(nameTable))
-            fileTable[fileEntry].append(directoryDict[dir])
-            nameTable = nameTable + str.encode(dir) + b"\x00"
+            directoryDict[directory] = (len(nameTable))
+            fileTable[fileEntry].append(directoryDict[directory])
+            nameTable = nameTable + str.encode(directory) + b"\x00"
         filesize = file.stat().st_size
         fileTable[fileEntry].extend((dataLength, filesize, 18446744073709551615, 65536)) # 65536 if uncompressed
         dataLength += filesize

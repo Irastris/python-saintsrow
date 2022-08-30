@@ -44,6 +44,8 @@ class SR5Archive:
             pEnd         = self.nameTable.find(b"\x00", self.fileTable[i][6])
             filename     = self.nameTable[fStart:fEnd].decode("utf-8")
             path         = self.nameTable[pStart:pEnd].decode("utf-8")
+            if path.startswith("..\\ctg\\"):
+                path = path[7:]
             self.fileTable[i] = self.fileTable[i][:-2]
             self.fileTable[i].extend([path, filename])
 
