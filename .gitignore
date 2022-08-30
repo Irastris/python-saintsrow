@@ -128,3 +128,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Saints Row Testing
+data/
+*.vpp_pc*

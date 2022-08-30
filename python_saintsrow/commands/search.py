@@ -19,6 +19,7 @@ def printEntryInfo(entry, dataOffsetBase):
 @click.argument("input", type=click.Path())
 def search(input, query, extract):
     """Search (and optionally extract) a .vpp_pc or .str2_pc archive."""
+    
     with open(input, "rb") as inputFile:
         archive = SR5Archive(inputFile)
 

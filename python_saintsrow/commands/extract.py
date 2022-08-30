@@ -6,6 +6,8 @@ import progressbar
 from ..classes.SR5Archive import SR5Archive
 from ..functions.threadedExtractor import threadedExtractor
 
+widgets = ["Extracting Files (", progressbar.SimpleProgress(), ") ", progressbar.PercentageLabelBar(), " ", progressbar.AdaptiveETA()]
+
 @click.command()
 @click.option("-sAn", "--skip-animation", is_flag=True, help="Skip extracting animation data")
 @click.option("-sAr", "--skip-archive", is_flag=True, help="Skip extracting archive data")
@@ -19,6 +21,7 @@ from ..functions.threadedExtractor import threadedExtractor
 @click.argument("input", type=click.Path())
 def extract(input, skip_animation, skip_archive, skip_audio, skip_mesh, skip_morph, skip_prefab, skip_texture, skip_video, skip_xml):
     """Extract a .vpp_pc or .str2_pc archive."""
+    
     print("")
     with open(input, "rb") as inputFile:
         archive = SR5Archive(inputFile)
@@ -49,7 +52,6 @@ def extract(input, skip_animation, skip_archive, skip_audio, skip_mesh, skip_mor
 
     # Extract Files
     filesExtracted = 0
-    widgets = ["Extracting Files (", progressbar.SimpleProgress(), ") ", progressbar.PercentageLabelBar(), " ", progressbar.AdaptiveETA()]
     with ThreadPoolExecutor() as pool, progressbar.ProgressBar(widgets=widgets, max_value=len(archive.fileTable)) as bar:
         threads = []
 

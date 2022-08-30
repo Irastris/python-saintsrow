@@ -1,24 +1,21 @@
-from struct import unpack
-
-def int32(bytes): return unpack("<I", bytes)[0]
-def int64(bytes): return unpack("<Q", bytes)[0]
+from ..functions.binaryUtils import int32unpack, int64unpack
 
 class SR5Archive:
     class Header:
         def __init__(self, header):
-            self.magic                 = int32(header[0:4])
-            self.version               = int32(header[4:8])
-            self.crc                   = int32(header[8:12])
-            self.flags                 = int32(header[12:16])
-            self.fileCount             = int32(header[16:20])
-            self.dirCount              = int32(header[20:24])
-            self.namesOffset           = int32(header[24:28])
-            self.namesSize             = int32(header[28:32])
-            self.packSize              = int64(header[32:40])
-            self.uncompressedSize      = int64(header[40:48])
-            self.size                  = int64(header[48:56])
-            self.timestamp             = int64(header[56:64])
-            self.dataOffsetBase        = int64(header[64:72])
+            self.magic                 = int32unpack(header[0:4])
+            self.version               = int32unpack(header[4:8])
+            self.crc                   = int32unpack(header[8:12])
+            self.flags                 = int32unpack(header[12:16])
+            self.fileCount             = int32unpack(header[16:20])
+            self.dirCount              = int32unpack(header[20:24])
+            self.namesOffset           = int32unpack(header[24:28])
+            self.namesSize             = int32unpack(header[28:32])
+            self.packSize              = int64unpack(header[32:40])
+            self.uncompressedSize      = int64unpack(header[40:48])
+            self.size                  = int64unpack(header[48:56])
+            self.timestamp             = int64unpack(header[56:64])
+            self.dataOffsetBase        = int64unpack(header[64:72])
             self.unk03                 =       header[72:120]
 
     def fileTable(self, archive):
@@ -26,12 +23,12 @@ class SR5Archive:
         for i in range(self.header.fileCount):
             entryOffset    = archive.tell()
             fileEntry      = archive.read(48)
-            filenameOffset = int64(fileEntry[0:8])
-            filepathOffset = int64(fileEntry[8:16])
-            dataOffset     = int64(fileEntry[16:24])
-            size           = int64(fileEntry[24:32])
-            compressedSize = int64(fileEntry[32:40])
-            flags          = int64(fileEntry[40:48])
+            filenameOffset = int64unpack(fileEntry[0:8])
+            filepathOffset = int64unpack(fileEntry[8:16])
+            dataOffset     = int64unpack(fileEntry[16:24])
+            size           = int64unpack(fileEntry[24:32])
+            compressedSize = int64unpack(fileEntry[32:40])
+            flags          = int64unpack(fileEntry[40:48])
             fileTable.append([entryOffset, dataOffset, size, compressedSize, flags, filenameOffset, filepathOffset])
         return fileTable
 
