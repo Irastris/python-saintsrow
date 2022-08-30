@@ -2,7 +2,7 @@
 An experimental CLI toolset designed expressly for "Saints Row (2022)", built with Python.
 
 # Download
-#### A prebuilt binary is available for Windows [here](https://github.com/Irastris/python-saintsrow/releases/tag/v0.1.0) or by navigating to releases.
+#### A prebuilt binary is available for Windows [here](https://github.com/Irastris/python-saintsrow/releases/tag/v0.1.0) or by navigating to releases. Prebuilt binaries may be out of date as they are low priority.
 
 # Building:
 #### setuptools
