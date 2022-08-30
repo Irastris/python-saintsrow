@@ -21,7 +21,7 @@ widgets = ["Extracting Files (", progressbar.SimpleProgress(), ") ", progressbar
 @click.argument("input", type=click.Path())
 def extract(input, skip_animation, skip_archive, skip_audio, skip_mesh, skip_morph, skip_prefab, skip_texture, skip_video, skip_xml):
     """Extract a .vpp_pc or .str2_pc archive."""
-    
+
     print("")
     with open(input, "rb") as inputFile:
         archive = SR5Archive(inputFile)
@@ -60,8 +60,8 @@ def extract(input, skip_animation, skip_archive, skip_audio, skip_mesh, skip_mor
             size            = archive.fileTable[i][2]
             compressedSize  = archive.fileTable[i][3]
             flags           = archive.fileTable[i][4]
-            path            = archive.fileTable[i][5]
-            filename        = archive.fileTable[i][6]
+            path            = archive.fileTable[i][6]
+            filename        = archive.fileTable[i][7]
 
             thread = pool.submit(threadedExtractor, input, dataOffset + archive.header.dataOffsetBase, size, compressedSize, flags, path, filename)
             threads.append(thread)

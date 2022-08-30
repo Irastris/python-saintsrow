@@ -28,8 +28,9 @@ class SR5Archive:
             dataOffset     = int64unpack(fileEntry[16:24])
             size           = int64unpack(fileEntry[24:32])
             compressedSize = int64unpack(fileEntry[32:40])
-            flags          = int64unpack(fileEntry[40:48])
-            fileTable.append([entryOffset, dataOffset, size, compressedSize, flags, filenameOffset, filepathOffset])
+            flags          = int32unpack(fileEntry[40:44])
+            unk00          = int32unpack(fileEntry[44:48])
+            fileTable.append([entryOffset, dataOffset, size, compressedSize, flags, unk00, filenameOffset, filepathOffset])
         return fileTable
 
     def nameTable(self, archive):
@@ -38,14 +39,13 @@ class SR5Archive:
 
     def parseFileTable(self):
         for i in range(self.header.fileCount):
-            fStart       = self.fileTable[i][5]
-            pStart       = self.fileTable[i][6]
-            fEnd         = self.nameTable.find(b"\x00", self.fileTable[i][5])
-            pEnd         = self.nameTable.find(b"\x00", self.fileTable[i][6])
+            fStart       = self.fileTable[i][6]
+            pStart       = self.fileTable[i][7]
+            fEnd         = self.nameTable.find(b"\x00", fStart)
+            pEnd         = self.nameTable.find(b"\x00", pStart)
             filename     = self.nameTable[fStart:fEnd].decode("utf-8")
             path         = self.nameTable[pStart:pEnd].decode("utf-8")
-            if path.startswith("..\\ctg\\"):
-                path = path[7:]
+            if path.startswith("..\\ctg\\"): path = path[7:]
             self.fileTable[i] = self.fileTable[i][:-2]
             self.fileTable[i].extend([path, filename])
 
