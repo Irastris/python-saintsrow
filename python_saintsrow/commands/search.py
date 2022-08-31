@@ -6,8 +6,8 @@ from ..functions.threadedExtractor import threadedExtractor
 def printEntryInfo(entry, dataOffsetBase):
     print("")
     print(f"Entry Offset:    {entry[0]}")
-    print(f"Filename:        {entry[7]}")
-    print(f"Path:            {entry[6]}")
+    print(f"Filename:        {entry[9]}")
+    print(f"Path:            {entry[8]}")
     print(f"Data Offset:     {entry[1]} ({entry[1] + dataOffsetBase})")
     print(f"Size:            {entry[2]}")
     print(f"Compressed Size: {entry[3]}")
@@ -16,7 +16,7 @@ def printEntryInfo(entry, dataOffsetBase):
 
 @click.command()
 @click.option("-e", "--extract", is_flag=True, help="Extract matching file(s)")
-@click.option("-q", "--query", type=str, required=True, help="String to search for")
+@click.option("-q", "--query", type=str, default="", help="String to search for")
 @click.argument("input", type=click.Path())
 def search(input, query, extract):
     """Search (and optionally extract) a .vpp_pc or .str2_pc archive."""
@@ -26,9 +26,9 @@ def search(input, query, extract):
 
     # Search Files
     matches = []
-    for i in range(len(archive.fileTable)):
-        if query in archive.fileTable[i][7]:
-            matches.append(archive.fileTable[i])
+    for entry in archive.fileTable:
+        if query in entry[9]:
+            matches.append(entry)
 
     # Print Matches
     for match in matches:
