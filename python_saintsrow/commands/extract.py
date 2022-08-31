@@ -28,15 +28,15 @@ def extract(input, skip_animation, skip_archive, skip_audio, skip_mesh, skip_mor
 
     # Skip Excluded Formats
     for i in range(archive.header.fileCount):
-        isFileAnimation = ".anim_pad" in archive.fileTable[i][6]
-        isFileMorph     = ".cmorph_pc" in archive.fileTable[i][6]
-        isFileVideo     = ".bk2" in archive.fileTable[i][6]
-        isFileArchive   = any(format in archive.fileTable[i][6] for format in [".str2_pc", ".vpp_pc"])
-        isFileAudio     = any(format in archive.fileTable[i][6] for format in [".bnk_pad", ".wem_pad"])
-        isFileMesh      = any(format in archive.fileTable[i][6] for format in [".cmesh_pc", ".gmesh_pc"])
-        isFilePrefab    = any(format in archive.fileTable[i][6] for format in [".cprefab_pc", ".gprefab_pc", ".hprefab_pc"])
-        isFileTexture   = any(format in archive.fileTable[i][6] for format in [".cvbm_pc", ".gvbh_pc", ".gvbm_pc"])
-        isFileXML       = any(format in archive.fileTable[i][6] for format in [".vint_proj", ".vpkg", ".xml"])
+        isFileAnimation = ".anim_pad" in archive.fileTable[i][9]
+        isFileMorph     = ".cmorph_pc" in archive.fileTable[i][9]
+        isFileVideo     = ".bk2" in archive.fileTable[i][9]
+        isFileArchive   = any(format in archive.fileTable[i][9] for format in [".str2_pc", ".vpp_pc"])
+        isFileAudio     = any(format in archive.fileTable[i][9] for format in [".bnk_pad", ".wem_pad"])
+        isFileMesh      = any(format in archive.fileTable[i][9] for format in [".cmesh_pc", ".gmesh_pc"])
+        isFilePrefab    = any(format in archive.fileTable[i][9] for format in [".cprefab_pc", ".gprefab_pc", ".hprefab_pc"])
+        isFileTexture   = any(format in archive.fileTable[i][9] for format in [".cvbm_pc", ".gvbh_pc", ".gvbm_pc"])
+        isFileXML       = any(format in archive.fileTable[i][9] for format in [".vint_proj", ".vpkg", ".xml"])
         if (
             ( skip_animation and isFileAnimation ) or
             ( skip_archive   and isFileArchive   ) or
@@ -60,8 +60,8 @@ def extract(input, skip_animation, skip_archive, skip_audio, skip_mesh, skip_mor
             size            = archive.fileTable[i][2]
             compressedSize  = archive.fileTable[i][3]
             flags           = archive.fileTable[i][4]
-            path            = archive.fileTable[i][6]
-            filename        = archive.fileTable[i][7]
+            path            = archive.fileTable[i][8]
+            filename        = archive.fileTable[i][9]
 
             thread = pool.submit(threadedExtractor, input, dataOffset + archive.header.dataOffsetBase, size, compressedSize, flags, path, filename)
             threads.append(thread)

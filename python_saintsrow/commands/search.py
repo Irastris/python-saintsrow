@@ -12,6 +12,7 @@ def printEntryInfo(entry, dataOffsetBase):
     print(f"Size:            {entry[2]}")
     print(f"Compressed Size: {entry[3]}")
     print(f"Flags:           {entry[4]}")
+    print(f"Unk00:           {entry[5]}")
 
 @click.command()
 @click.option("-e", "--extract", is_flag=True, help="Extract matching file(s)")

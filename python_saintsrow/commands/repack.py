@@ -1,118 +1,83 @@
+import math
+import json
 from pathlib import Path
 
 import click
 import lz4.frame as lz4f
 import progressbar
 
+from ..classes.SR5Archive import SR5Archive
 from ..functions.binaryUtils import int32pack, int64pack
 
 widgets = ["Packing Files (", progressbar.SimpleProgress(), ") ", progressbar.PercentageLabelBar(), " ", progressbar.AdaptiveETA()]
 
 @click.command()
-@click.option("-c", "--compress", is_flag=True, help="Compress files, required for packing str2_pc")
-@click.argument("input", type=click.Path())
-@click.argument("output", type=click.Path())
-def repack(input, output, compress):
+@click.argument("a", type=click.Path()) # Original Archive
+@click.argument("b", type=click.Path()) # JSON Dump
+@click.argument("c", type=click.Path()) # Data Directory
+@click.argument("d", type=click.Path()) # Output Archive
+def repack(a, b, c, d):
     """Repack a folder into a .vpp_pc or .str2_pc"""
 
     print("")
-    if Path(input).is_file(): exit("Invalid input, must be data directory!")
+    if Path(c).is_file(): exit("Invalid C input, must be data directory!")
 
-    # Get Files
-    files = []
-    for file in Path(input).glob("**/*"):
+    # Load JSON Dump
+    with open(b, "r") as jsonFile:
+        fileTable = json.load(jsonFile)
+
+    # Get Unpacked Files
+    files = {}
+    for file in Path(c).glob("**/*"):
         if Path(file).is_file():
-            files.append(file)
+            if file.name in files:
+                print(f"Duplicate! {file.name}")
+            else:
+                files[file.name] = file
 
-    # Build Tables
-    fileTable = {}
-    nameTable = b""
-    dataLength = 0
-    dataLengthCompressed = 0
-    for i in range(len(files)): # Loop through all files
-        fileEntry = files[i] # Get entry from index
-        directory = str(fileEntry.parents[0]) # Get directory from filepath
-        filename = str(fileEntry.name) # Get filename from filepath
-        filesize = fileEntry.stat().st_size
-        if directory.startswith("data\\engine"):
-            directory = f"..\\ctg\\{directory}" # Fix engine data paths | TODO: Can this be better?
-        if directory not in fileTable: # Initialize a key for this directory
-            fileTable[directory] = {}
-            fileTable[directory]["files"] = {}
-            fileTable[directory]["pathOffset"] = (len(nameTable)) # Set path offset
-            nameTable = nameTable + str.encode(directory) + b"\x00" # Append directory to the nameTable
-        if filename not in fileTable[directory]["files"]:
-            fileTable[directory]["files"][filename] = {} # Initialize
-        fileTable[directory]["files"][filename]["nameOffset"] = len(nameTable) # Set name offset
-        nameTable = nameTable + str.encode(filename) + b"\x00" # Append filename to the nameTable
-        fileTable[directory]["files"][filename]["size"] = filesize # Set filesize
-        compressedSize = 18446744073709551615 # Maximum int64 if file is not compressed
-        if compress:
-            with open(fileEntry, "rb") as file:
-                compressedSize = len(lz4f.compress(file.read())) # LZ4 compress and get length | TODO: Can this be better?
-        fileTable[directory]["files"][filename]["sizeCompressed"] = compressedSize # Set compressed filesize
-        fileTable[directory]["files"][filename]["flags"] = 65537 if compress else 65536 # Set flags | TODO: Research flags more
-        fileTable[directory]["files"][filename]["dataOffset"] = dataLengthCompressed if compress else dataLength # Set data offset
-        dataLength += filesize
-        dataLengthCompressed += compressedSize if compress else filesize
+    # Build Name Table
+    with open(a, "rb") as inputArchive:
+        archive = SR5Archive(inputArchive)
 
-    with open(output, "wb") as archive:
+    # Output
+    with open(d, "wb") as outputArchive:
         # Header
-        archive.write(int32pack(1367935694))               # Magic
-        archive.write(int32pack(17))                       # Version
-        archive.write(int32pack(0))                        # CRC | TODO: Research this more
-        archive.write(int32pack(20481 if compress else 0)) # Flags | TODO: Research this more
-        archive.write(int32pack(len(files)))               # File Count
-        archive.write(int32pack(len(fileTable)))           # Directory Count
-        namesOffset = archive.tell()
-        archive.write(int32pack(0))                        # Names Offset, set later
-        archive.write(int32pack(0))                        # Names Size, set later
-        packSize = archive.tell()
-        archive.write(int64pack(0))                        # Pack Size, set later
-        archive.write(int64pack(dataLength))               # Size
-        archive.write(int64pack(dataLengthCompressed))     # Compressed Size
-        archive.write(int64pack(0))                        # Timestamp
-        dataOffsetBase = archive.tell()
-        archive.write(int64pack(0))                        # Data Offset Base
-        archive.write(b"\x00" * 48)                        # 48 Zeroes
+        outputArchive.write(int32pack(archive.header.magic))            # Magic
+        outputArchive.write(int32pack(archive.header.version))          # Version
+        outputArchive.write(int32pack(archive.header.crc))              # CRC | TODO: Research this more
+        outputArchive.write(int32pack(archive.header.flags))            # Flags | TODO: Research this more
+        outputArchive.write(int32pack(archive.header.fileCount))        # File Count
+        outputArchive.write(int32pack(archive.header.dirCount))         # Directory Count
+        outputArchive.write(int32pack(archive.header.namesOffset))      # Names Offset, set later
+        outputArchive.write(int32pack(archive.header.namesSize))        # Names Size, set later
+        outputArchive.write(int64pack(archive.header.packSize))         # Pack Size, set later
+        outputArchive.write(int64pack(archive.header.uncompressedSize)) # Size
+        outputArchive.write(int64pack(archive.header.size))             # Compressed Size
+        outputArchive.write(int64pack(archive.header.timestamp))        # Timestamp
+        outputArchive.write(int64pack(archive.header.dataOffsetBase))   # Data Offset Base
+        outputArchive.write(archive.header.unk03)                       # 48 Zeroes
 
         # File Table
-        for directory in fileTable:
-            for file in fileTable[directory]["files"]:
-                archive.write(int64pack(fileTable[directory]["files"][file]["nameOffset"])) # Name Offset
-                archive.write(int64pack(fileTable[directory]["pathOffset"])) # Path Offset
-                archive.write(int64pack(fileTable[directory]["files"][file]["dataOffset"])) # Data Offset
-                archive.write(int64pack(fileTable[directory]["files"][file]["size"])) # Size
-                archive.write(int64pack(fileTable[directory]["files"][file]["sizeCompressed"])) # Compressed Size
-                archive.write(int32pack(fileTable[directory]["files"][file]["flags"])) # Flags
-                archive.write(int32pack(0))
+        for file in fileTable:
+            outputArchive.write(int64pack(fileTable[file]["nameOffset"])) # Name Offset
+            outputArchive.write(int64pack(fileTable[file]["pathOffset"])) # Path Offset
+            outputArchive.write(int64pack(fileTable[file]["dataOffset"])) # Data Offset
+            outputArchive.write(int64pack(fileTable[file]["size"])) # Size
+            outputArchive.write(int64pack(fileTable[file]["sizeCompressed"])) # Compressed Size
+            outputArchive.write(int32pack(fileTable[file]["flags"])) # Flags
+            outputArchive.write(int32pack(fileTable[file]["unk00"])) # Unk00
 
         # Directory Offsets
-        for directory in fileTable:
-            archive.write(int64pack(fileTable[directory]["pathOffset"])) # Path Offset
+        outputArchive.write(archive.dirTable)
 
         # Name Table
-        curPos = archive.tell()
-        archive.seek(namesOffset)
-        archive.write(int32pack(curPos - 120))
-        archive.write(int32pack(len(nameTable)))
-        archive.seek(curPos)
-        archive.write(nameTable)
+        outputArchive.write(archive.nameTable)
 
         # Data
-        curPos = archive.tell()
-        archive.seek(dataOffsetBase)
-        archive.write(int32pack(curPos))
-        archive.seek(curPos)
-        for i in progressbar.progressbar(range(len(files)), widgets=widgets):
-            with open(files[i], "rb") as data:
-                if compress:
-                    archive.write(lz4f.compress(data.read()))
-                else:
-                    archive.write(data.read())
-
-        # Pack Size
-        curPos = archive.tell()
-        archive.seek(packSize)
-        archive.write(int32pack(curPos))
-        archive.seek(curPos)
+        outputArchive.seek(archive.header.dataOffsetBase)
+        for file in fileTable: # progressbar.progressbar(range(len(files)), widgets=widgets)
+            isFileAligned = any(format in file for format in [".bk2"])
+            with open(files[file], "rb") as data:
+                bytes = data.read()
+                if isFileAligned: outputArchive.seek(int(math.ceil(outputArchive.tell() / 2048)) * 2048)
+                outputArchive.write(bytes)

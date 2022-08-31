@@ -16,7 +16,7 @@ class SR5Archive:
             self.size                  = int64unpack(header[48:56])
             self.timestamp             = int64unpack(header[56:64])
             self.dataOffsetBase        = int64unpack(header[64:72])
-            self.unk03                 =       header[72:120]
+            self.unk03                 =             header[72:120]
 
     def fileTable(self, archive):
         fileTable = []
@@ -33,8 +33,10 @@ class SR5Archive:
             fileTable.append([entryOffset, dataOffset, size, compressedSize, flags, unk00, filenameOffset, filepathOffset])
         return fileTable
 
+    def dirTable(self, archive):
+        return archive.read(self.header.dirCount * 8)
+
     def nameTable(self, archive):
-        archive.seek(120 + self.header.namesOffset)
         return archive.read(self.header.namesSize)
 
     def parseFileTable(self):
@@ -46,11 +48,11 @@ class SR5Archive:
             filename     = self.nameTable[fStart:fEnd].decode("utf-8")
             path         = self.nameTable[pStart:pEnd].decode("utf-8")
             if path.startswith("..\\ctg\\"): path = path[7:]
-            self.fileTable[i] = self.fileTable[i][:-2]
             self.fileTable[i].extend([path, filename])
 
     def __init__(self, archive):
         self.header = self.Header(archive.read(120))
         self.fileTable = self.fileTable(archive)
+        self.dirTable = self.dirTable(archive)
         self.nameTable = self.nameTable(archive)
         self.parseFileTable()
