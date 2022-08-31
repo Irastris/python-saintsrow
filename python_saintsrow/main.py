@@ -1,6 +1,5 @@
 import click
 
-from .commands import dump
 from .commands import extract
 from .commands import repack
 from .commands import search
@@ -9,7 +8,6 @@ from .commands import search
 def cli():
     pass
 
-cli.add_command(dump.dump)
 cli.add_command(extract.extract)
 cli.add_command(repack.repack)
 cli.add_command(search.search)
