@@ -34,5 +34,5 @@ def search(input, query, extract):
     for match in matches:
         printEntryInfo(match, archive.header.dataOffsetBase)
         if extract:
-            threadedExtractor(input, match[1] + archive.header.dataOffsetBase, match[2], match[3], match[4], match[6], match[7]) # No need to actually thread
+            threadedExtractor(input, match[1] + archive.header.dataOffsetBase, match[2], match[3], match[4], match[8], match[9]) # No need to actually thread
             print("Extracted")

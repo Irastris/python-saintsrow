@@ -25,14 +25,14 @@ def extract(input):
         filename = archive.fileTable[i][9]
         if filename not in fileTable:
             fileTable[filename] = {}
-        fileTable[filename]["entryOffset"] = archive.fileTable[i][0]
-        fileTable[filename]["nameOffset"] = archive.fileTable[i][6]
-        fileTable[filename]["pathOffset"] = archive.fileTable[i][7]
-        fileTable[filename]["dataOffset"] = archive.fileTable[i][1]
-        fileTable[filename]["size"] = archive.fileTable[i][2]
+        fileTable[filename]["entryOffset"]    = archive.fileTable[i][0]
+        fileTable[filename]["nameOffset"]     = archive.fileTable[i][6]
+        fileTable[filename]["pathOffset"]     = archive.fileTable[i][7]
+        fileTable[filename]["dataOffset"]     = archive.fileTable[i][1]
+        fileTable[filename]["size"]           = archive.fileTable[i][2]
         fileTable[filename]["sizeCompressed"] = archive.fileTable[i][3]
-        fileTable[filename]["flags"] = archive.fileTable[i][4]
-        fileTable[filename]["unk00"] = archive.fileTable[i][5]
+        fileTable[filename]["flags"]          = archive.fileTable[i][4]
+        fileTable[filename]["unk00"]          = archive.fileTable[i][5]
 
     # Dump Tables To JSON
     stem = Path(input).name
