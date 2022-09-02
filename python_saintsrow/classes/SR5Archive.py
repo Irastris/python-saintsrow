@@ -1,4 +1,4 @@
-from ..functions.binaryUtils import int32unpack, int64unpack
+from ..functions.binaryUtils import int16unpack, int32unpack, int64unpack
 
 class SR5Archive:
     class Header:
@@ -28,9 +28,10 @@ class SR5Archive:
             dataOffset     = int64unpack(fileEntry[16:24])
             size           = int64unpack(fileEntry[24:32])
             compressedSize = int64unpack(fileEntry[32:40])
-            flags          = int32unpack(fileEntry[40:44])
+            flags          = int16unpack(fileEntry[40:42])
+            align          = int16unpack(fileEntry[42:44])
             unk00          = int32unpack(fileEntry[44:48])
-            fileTable.append([entryOffset, dataOffset, size, compressedSize, flags, unk00, filenameOffset, filepathOffset])
+            fileTable.append([entryOffset, filenameOffset, filepathOffset, dataOffset, size, compressedSize, flags, align, unk00])
         return fileTable
 
     def dirTable(self, archive):
@@ -41,8 +42,8 @@ class SR5Archive:
 
     def parseFileTable(self):
         for i in range(self.header.fileCount):
-            fStart       = self.fileTable[i][6]
-            pStart       = self.fileTable[i][7]
+            fStart       = self.fileTable[i][1]
+            pStart       = self.fileTable[i][2]
             fEnd         = self.nameTable.find(b"\x00", fStart)
             pEnd         = self.nameTable.find(b"\x00", pStart)
             filename     = self.nameTable[fStart:fEnd].decode("utf-8")
