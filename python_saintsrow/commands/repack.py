@@ -6,7 +6,7 @@ import click
 import progressbar
 
 from ..classes.SR5Archive import SR5Archive
-from ..functions.binaryUtils import int32pack, int64pack
+from ..functions.binaryUtils import int16pack, int32pack, int64pack
 from ..functions.lz4f import lz4fCompress
 
 widgets = ["Packing Files (", progressbar.SimpleProgress(), ") ", progressbar.PercentageLabelBar(), " ", progressbar.AdaptiveETA()]
@@ -92,8 +92,8 @@ def repack(a, b, c, d):
             outputArchive.write(int64pack(fileTable[file]["dataOffset"])) # Data Offset
             outputArchive.write(int64pack(fileTable[file]["size"])) # Size
             outputArchive.write(int64pack(fileTable[file]["sizeCompressed"])) # Compressed Size
-            outputArchive.write(int32pack(fileTable[file]["flags"])) # Flags
-            outputArchive.write(int32pack(fileTable[file]["align"])) # Alignment
+            outputArchive.write(int16pack(fileTable[file]["flags"])) # Flags
+            outputArchive.write(int16pack(fileTable[file]["align"])) # Alignment
             outputArchive.write(int32pack(fileTable[file]["unk00"])) # Unk00
 
         # Directory Offsets
