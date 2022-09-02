@@ -84,6 +84,7 @@ def repack(a, b, c, d):
         outputArchive.write(int64pack(archive.header.uncompressedSize)) # Size
         outputArchive.write(int64pack(archive.header.size))             # Compressed Size
         outputArchive.write(int64pack(archive.header.timestamp))        # Timestamp
+        dataOffsetBaseOffset = outputArchive.tell()
         outputArchive.write(int64pack(archive.header.dataOffsetBase))   # Data Offset Base
         outputArchive.write(archive.header.unk03)                       # 48 Zeroes
 
@@ -104,9 +105,15 @@ def repack(a, b, c, d):
         # Name Table
         outputArchive.write(archive.nameTable)
 
+        # Data Offset
+        outputArchive.seek(int(math.ceil(outputArchive.tell() / archive.header.maxAlign)) * archive.header.maxAlign)
+        dataOffsetBase = outputArchive.tell()
+        outputArchive.seek(dataOffsetBaseOffset)
+        outputArchive.write(int64pack(dataOffsetBase))
+
         # Data
-        outputArchive.seek(archive.header.dataOffsetBase)
         dataBlock.seek(0)
+        outputArchive.seek(dataOffsetBase)
         outputArchive.write(dataBlock.read())
 
         # Pack Size

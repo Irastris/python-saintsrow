@@ -17,6 +17,7 @@ class SR5Archive:
             self.timestamp             = int64unpack(header[56:64])
             self.dataOffsetBase        = int64unpack(header[64:72])
             self.unk03                 =             header[72:120]
+            self.maxAlign              = 0
 
     def fileTable(self, archive):
         fileTable = []
@@ -32,6 +33,7 @@ class SR5Archive:
             align          = int16unpack(fileEntry[42:44])
             unk00          = int32unpack(fileEntry[44:48])
             fileTable.append([entryOffset, filenameOffset, filepathOffset, dataOffset, size, compressedSize, flags, align, unk00])
+            if align > self.header.maxAlign: self.header.maxAlign = align
         return fileTable
 
     def dirTable(self, archive):
