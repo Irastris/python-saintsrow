@@ -1,5 +1,6 @@
-import math
 import json
+import math
+import tempfile
 from pathlib import Path
 
 import click
@@ -25,6 +26,9 @@ def repack(a, b, c, d):
     # Parse Original Archive
     with open(a, "rb") as inputArchive:
         archive = SR5Archive(inputArchive)
+    # Reset these values because we add to them later to get the correct size
+    archive.header.uncompressedSize = 0
+    archive.header.size = 0
 
     # Get Unpacked Files
     files = {}
@@ -40,31 +44,29 @@ def repack(a, b, c, d):
         fileTable = json.load(jsonFile)
 
     # Data Preprocessing
-    dataBlockPath = Path(f"{d}.data") # Set path for writing data temporarily
-    length = 0
-    lengthLz4 = 0
-    with open(dataBlockPath, "wb") as dataBlock:
-        for file in progressbar.progressbar(fileTable, widgets=widgets):
-            filePath = Path(files[file])
+    dataBlock = tempfile.TemporaryFile()
+    for file in progressbar.progressbar(fileTable, widgets=widgets):
+        filepath = Path(files[file])
 
-            isFileAligned = ".bk2" in file
-            if isFileAligned: dataBlock.seek(int(math.ceil(dataBlock.tell() / 2048)) * 2048) # BINK must be aligned with a multiple of 2048 bytes or else playback can fail
+        # TODO: Figure out the oddity surrounding alignment. Only BK2 consistently works when respecting its alignment
+        align = fileTable[file]["align"]
+        isFileAligned = ".bk2" in file
+        if isFileAligned: dataBlock.seek(int(math.ceil(dataBlock.tell() / align)) * align)
 
-            fileTable[file]["dataOffset"] = dataBlock.tell() # Update dataOffset
-            fileTable[file]["size"] == filePath.stat().st_size # Update size
+        fileTable[file]["dataOffset"] = dataBlock.tell() # Update data offset
 
-            with open(files[file], "rb") as data:
-                if fileTable[file]["flags"] & 1:
-                    lz4 = lz4fCompress(data.read())
-                    lengthLz4 += lz4[2] + 4
-                    fileTable[file]["sizeCompressed"] = lz4[2] + 4 # Update sizeCompressed
-                    dataBlock.write(lz4[0]) # Header
-                    dataBlock.write(lz4[1]) # Frame
-                    dataBlock.write(b"\x00" * 4)
-                else:
-                    dataBlock.write(data.read())
+        with open(files[file], "rb") as data:
+            if fileTable[file]["flags"] & 1:
+                lz4 = lz4fCompress(data.read())
+                dataBlock.write(lz4)
+                fileTable[file]["sizeCompressed"] = len(lz4)
+                archive.header.size += len(lz4)
+            else:
+                dataBlock.write(data.read())
+                fileTable[file]["size"] == filepath.stat().st_size
+                archive.header.size += filepath.stat().st_size
 
-            length += filePath.stat().st_size
+        archive.header.uncompressedSize += filepath.stat().st_size
 
     # Output
     with open(d, "wb") as outputArchive:
@@ -79,8 +81,8 @@ def repack(a, b, c, d):
         outputArchive.write(int32pack(archive.header.namesSize))        # Names Size
         packSizeOffset = outputArchive.tell()
         outputArchive.write(int64pack(archive.header.packSize))         # Pack Size
-        outputArchive.write(int64pack(length))                          # Size
-        outputArchive.write(int64pack(lengthLz4))                       # Compressed Size
+        outputArchive.write(int64pack(archive.header.uncompressedSize)) # Size
+        outputArchive.write(int64pack(archive.header.size))             # Compressed Size
         outputArchive.write(int64pack(archive.header.timestamp))        # Timestamp
         outputArchive.write(int64pack(archive.header.dataOffsetBase))   # Data Offset Base
         outputArchive.write(archive.header.unk03)                       # 48 Zeroes
@@ -104,12 +106,12 @@ def repack(a, b, c, d):
 
         # Data
         outputArchive.seek(archive.header.dataOffsetBase)
-        with open(dataBlockPath, "rb") as dataBlock:
-            outputArchive.write(dataBlock.read())
+        dataBlock.seek(0)
+        outputArchive.write(dataBlock.read())
 
         # Pack Size
         packSize = outputArchive.tell()
         outputArchive.seek(packSizeOffset)
         outputArchive.write(int64pack(packSize))
 
-        dataBlockPath.unlink()
+    dataBlock.close()
