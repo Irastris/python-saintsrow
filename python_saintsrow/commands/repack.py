@@ -93,6 +93,7 @@ def repack(a, b, c, d):
             outputArchive.write(int64pack(fileTable[file]["size"])) # Size
             outputArchive.write(int64pack(fileTable[file]["sizeCompressed"])) # Compressed Size
             outputArchive.write(int32pack(fileTable[file]["flags"])) # Flags
+            outputArchive.write(int32pack(fileTable[file]["align"])) # Alignment
             outputArchive.write(int32pack(fileTable[file]["unk00"])) # Unk00
 
         # Directory Offsets
