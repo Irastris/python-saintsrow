@@ -14,14 +14,13 @@ widgets = ["Packing Files (", progressbar.SimpleProgress(), ") ", progressbar.Pe
 
 @click.command()
 @click.argument("a", type=click.Path()) # Original Archive
-@click.argument("b", type=click.Path()) # JSON Dump
-@click.argument("c", type=click.Path()) # Data Directory
-@click.argument("d", type=click.Path()) # Output Archive
-def repack(a, b, c, d):
+@click.argument("b", type=click.Path()) # Data Directory
+@click.argument("c", type=click.Path()) # Output Archive
+def repack(a, b, c):
     """Repack a folder into a .vpp_pc or .str2_pc"""
 
     print("")
-    if Path(c).is_file(): exit("Invalid C input, must be data directory!")
+    if Path(b).is_file(): exit("Invalid B input, must be data directory!")
 
     # Parse Original Archive
     with open(a, "rb") as inputArchive:
@@ -32,7 +31,7 @@ def repack(a, b, c, d):
 
     # Get Unpacked Files
     files = {}
-    for file in Path(c).glob("**/*"):
+    for file in Path(b).glob("**/*"):
         if Path(file).is_file():
             if file.name in files:
                 print(f"Duplicate! {file.name}")
@@ -40,7 +39,7 @@ def repack(a, b, c, d):
                 files[file.name] = file
 
     # Load JSON Dump
-    with open(b, "r") as jsonFile:
+    with open(f"{Path(a).name}.json", "r") as jsonFile:
         fileTable = json.load(jsonFile)
 
     # Data Preprocessing
@@ -50,8 +49,7 @@ def repack(a, b, c, d):
 
         # TODO: Figure out the oddity surrounding alignment. Only BK2 consistently works when respecting its alignment
         align = fileTable[file]["align"]
-        isFileAligned = ".bk2" in file
-        if isFileAligned: dataBlock.seek(int(math.ceil(dataBlock.tell() / align)) * align)
+        if ".bk2" in file: dataBlock.seek(int(math.ceil(dataBlock.tell() / align)) * align)
 
         fileTable[file]["dataOffset"] = dataBlock.tell() # Update data offset
 
@@ -69,7 +67,7 @@ def repack(a, b, c, d):
         archive.header.uncompressedSize += filepath.stat().st_size
 
     # Output
-    with open(d, "wb") as outputArchive:
+    with open(c, "wb") as outputArchive:
         # Header
         outputArchive.write(int32pack(archive.header.magic))            # Magic
         outputArchive.write(int32pack(archive.header.version))          # Version
@@ -90,14 +88,14 @@ def repack(a, b, c, d):
 
         # File Table
         for file in fileTable:
-            outputArchive.write(int64pack(fileTable[file]["nameOffset"])) # Name Offset
-            outputArchive.write(int64pack(fileTable[file]["pathOffset"])) # Path Offset
-            outputArchive.write(int64pack(fileTable[file]["dataOffset"])) # Data Offset
-            outputArchive.write(int64pack(fileTable[file]["size"])) # Size
+            outputArchive.write(int64pack(fileTable[file]["nameOffset"]))     # Name Offset
+            outputArchive.write(int64pack(fileTable[file]["pathOffset"]))     # Path Offset
+            outputArchive.write(int64pack(fileTable[file]["dataOffset"]))     # Data Offset
+            outputArchive.write(int64pack(fileTable[file]["size"]))           # Size
             outputArchive.write(int64pack(fileTable[file]["sizeCompressed"])) # Compressed Size
-            outputArchive.write(int16pack(fileTable[file]["flags"])) # Flags
-            outputArchive.write(int16pack(fileTable[file]["align"])) # Alignment
-            outputArchive.write(int32pack(fileTable[file]["unk00"])) # Unk00
+            outputArchive.write(int16pack(fileTable[file]["flags"]))          # Flags
+            outputArchive.write(int16pack(fileTable[file]["align"]))          # Alignment
+            outputArchive.write(int32pack(fileTable[file]["unk00"]))          # Unk00
 
         # Directory Offsets
         outputArchive.write(archive.dirTable)
