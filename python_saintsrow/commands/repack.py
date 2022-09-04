@@ -47,9 +47,9 @@ def repack(a, b, c):
     for file in progressbar.progressbar(fileTable, widgets=widgets):
         filepath = Path(files[file])
 
-        # TODO: Figure out the oddity surrounding alignment. Only BK2 consistently works when respecting its alignment
+        # TODO: Figure out the oddity surrounding alignment.
         align = fileTable[file]["align"]
-        if ".bk2" in file: dataBlock.seek(int(math.ceil(dataBlock.tell() / align)) * align)
+        dataBlock.seek(int(math.ceil(dataBlock.tell() / align)) * align) # if ".bk2" in file:
 
         fileTable[file]["dataOffset"] = dataBlock.tell() # Update data offset
 
@@ -62,7 +62,6 @@ def repack(a, b, c):
             else:
                 dataBlock.write(data.read())
                 fileTable[file]["size"] == filepath.stat().st_size
-                archive.header.size += filepath.stat().st_size
 
         archive.header.uncompressedSize += filepath.stat().st_size
 
