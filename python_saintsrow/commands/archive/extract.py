@@ -5,15 +5,15 @@ from pathlib import Path
 import click
 import progressbar
 
-from ..classes.SR5Archive import SR5Archive
-from ..functions.threadedExtractor import threadedExtractor
+from python_saintsrow.classes.SR5Archive import SR5Archive
+from python_saintsrow.functions.threadedExtractor import threadedExtractor
 
 widgets = ["Extracting Files (", progressbar.SimpleProgress(), ") ", progressbar.PercentageLabelBar(), " ", progressbar.AdaptiveETA()]
 
 @click.command()
 @click.argument("input", type=click.Path())
 def extract(input):
-    """Extract a .vpp_pc or .str2_pc archive."""
+    """Extract an archive."""
 
     print("")
     with open(input, "rb") as inputFile:

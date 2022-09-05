@@ -4,15 +4,15 @@ from pathlib import Path
 import click
 import lz4.frame as lz4f
 
-from ..classes.SR5Archive import SR5Archive
-from ..functions.lz4f import lz4fCompress
-from ..functions.threadedExtractor import threadedExtractor
+from python_saintsrow.classes.SR5Archive import SR5Archive
+from python_saintsrow.functions.lz4f import lz4fCompress
+from python_saintsrow.functions.threadedExtractor import threadedExtractor
 
 @click.command()
 @click.option("-lz4", is_flag=True, help="Perform LZ4 test")
 @click.argument("input", type=click.Path())
 def tests(input, lz4):
-    """Perform miscellaneous, evolving tests."""
+    """Perform miscellaneous evolving tests."""
 
     print("")
 

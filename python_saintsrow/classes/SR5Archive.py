@@ -1,4 +1,4 @@
-from ..functions.binaryUtils import int16unpack, int32unpack, int64unpack
+from python_saintsrow.functions.binaryUtils import int16unpack, int32unpack, int64unpack
 
 class SR5Archive:
     class Header:

@@ -1,7 +1,7 @@
 import click
 
-from ..classes.SR5Archive import SR5Archive
-from ..functions.threadedExtractor import threadedExtractor
+from python_saintsrow.classes.SR5Archive import SR5Archive
+from python_saintsrow.functions.threadedExtractor import threadedExtractor
 
 def printEntryInfo(entry, dataOffsetBase):
     print("")
@@ -20,7 +20,7 @@ def printEntryInfo(entry, dataOffsetBase):
 @click.option("-q", "--query", type=str, default="", help="String to search for")
 @click.argument("input", type=click.Path())
 def search(input, query, extract):
-    """Search (and optionally extract) a .vpp_pc or .str2_pc archive."""
+    """Search and optionally extract from an archive."""
 
     with open(input, "rb") as inputFile:
         archive = SR5Archive(inputFile)

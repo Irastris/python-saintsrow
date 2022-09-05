@@ -6,9 +6,9 @@ from pathlib import Path
 import click
 import progressbar
 
-from ..classes.SR5Archive import SR5Archive
-from ..functions.binaryUtils import int16pack, int32pack, int64pack
-from ..functions.lz4f import lz4fCompress
+from python_saintsrow.classes.SR5Archive import SR5Archive
+from python_saintsrow.functions.binaryUtils import int16pack, int32pack, int64pack
+from python_saintsrow.functions.lz4f import lz4fCompress
 
 widgets = ["Packing Files (", progressbar.SimpleProgress(), ") ", progressbar.PercentageLabelBar(), " ", progressbar.AdaptiveETA()]
 
@@ -17,7 +17,7 @@ widgets = ["Packing Files (", progressbar.SimpleProgress(), ") ", progressbar.Pe
 @click.argument("b", type=click.Path()) # Data Directory
 @click.argument("c", type=click.Path()) # Output Archive
 def repack(a, b, c):
-    """Repack a folder into a .vpp_pc or .str2_pc"""
+    """Repack a folder into an archive"""
 
     print("")
     if Path(b).is_file(): exit("Invalid B input, must be data directory!")
@@ -61,7 +61,7 @@ def repack(a, b, c):
                 archive.header.size += len(lz4)
             else:
                 dataBlock.write(data.read())
-                fileTable[file]["size"] == filepath.stat().st_size
+                fileTable[file]["size"] = filepath.stat().st_size
 
         archive.header.uncompressedSize += filepath.stat().st_size
 
